@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-const ShowList = ({ cart = [], addToCart = () => {}, rentalList = [], removeFromRental = () => {} }) => {
+const ShowList = ({ cart = [], addToCart = () => {} }, rentalList = []) => {
   const [books, setBooks] = useState([]);
   const [filteredBooks, setFilteredBooks] = useState([]);
   const [searchKeyword, setSearchKeyword] = useState('');
@@ -29,8 +29,8 @@ const ShowList = ({ cart = [], addToCart = () => {}, rentalList = [], removeFrom
 
         const parser = new DOMParser();
         const xmlDoc = parser.parseFromString(xmlData, 'application/xml');
-        const resultCode = xmlDoc.getElementsByTagName('CODE')[0]?.textContent;
 
+        const resultCode = xmlDoc.getElementsByTagName('CODE')[0]?.textContent;
         if (resultCode !== 'INFO-000') {
           throw new Error(xmlDoc.getElementsByTagName('MESSAGE')[0]?.textContent || 'API Error');
         }
@@ -46,8 +46,16 @@ const ShowList = ({ cart = [], addToCart = () => {}, rentalList = [], removeFrom
           LANG: row.getElementsByTagName('LANG')[0]?.textContent || 'N/A',
         }));
 
-        setBooks(bookArray);
-        setFilteredBooks(bookArray);
+        // 대여된 책들의 'AVAILABLE' 상태를 '대여 중'으로 변경
+        const updatedBooks = bookArray.map((book) => {
+          if (rentalList.some((rentalBook) => rentalBook.CTRLNO === book.CTRLNO)) {
+            return { ...book, AVAILABLE: '대여 중' };
+          }
+          return book;
+        });
+
+        setBooks(updatedBooks);
+        setFilteredBooks(updatedBooks);
         setLoading(false);
       } catch (err) {
         console.error('Error fetching data:', err);
@@ -57,19 +65,6 @@ const ShowList = ({ cart = [], addToCart = () => {}, rentalList = [], removeFrom
     };
 
     fetchBooks();
-  }, []);
-
-  useEffect(() => {
-    if (books && books.length > 0 && rentalList.length > 0) {
-      const updatedBooks = books.map((book) => {
-        if (rentalList.some((rental) => rental.CTRLNO === book.CTRLNO)) {
-          return { ...book, AVAILABLE: '대여 중' };
-        }
-        return book;
-      });
-
-      setBooks(updatedBooks);
-    }
   }, [rentalList]);
 
   useEffect(() => {
@@ -124,6 +119,7 @@ const ShowList = ({ cart = [], addToCart = () => {}, rentalList = [], removeFrom
 
   if (loading) return <p>데이터를 불러오는 중입니다...</p>;
   if (error) return <p>오류 발생: {error}</p>;
+
   return (
     <div className="container">
       <h1>도서 리스트</h1>
