@@ -80,7 +80,7 @@ const ShowList = ({ cart = [], addToCart = () => {}, rentalList = [] }) => {
       // 상태 업데이트
       setBooks(updatedBooks);
     }
-  }, [rentalList]); // rentalList가 변경될 때마다 실행
+  }, [books, rentalList]); // rentalList가 변경될 때마다 실행
 
   useEffect(() => {
     if (!books || books.length === 0) return;
