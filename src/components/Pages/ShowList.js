@@ -63,8 +63,10 @@ const ShowList = ({ cart = [], addToCart = () => {}, rentalList = [] }) => {
     // rentalList에 있는 도서들의 CTRLNO에 해당하는 도서를 '대여 중'으로 업데이트
     if (books && books.length > 0 && rentalList.length > 0) {
       const updatedBooks = books.map((book) => {
+        console.log('일단 찾았어');
         // rentalList에서 대여 중인 책을 찾은 경우
         if (rentalList.some((rental) => rental.CTRLNO === book.CTRLNO)) {
+          console.log('일단 맞췄어');
           return { ...book, AVAILABLE: '대여 중' };
         }
         return book;
