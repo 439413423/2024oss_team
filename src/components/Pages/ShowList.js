@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-const ShowList = ({ cart = [], addToCart = () => {} }) => {
+const ShowList = ({ cart = [], addToCart = () => {}, rentalList = [], removeFromRental = () => {} }) => {
   const [books, setBooks] = useState([]);
   const [filteredBooks, setFilteredBooks] = useState([]);
   const [searchKeyword, setSearchKeyword] = useState('');
@@ -58,6 +58,20 @@ const ShowList = ({ cart = [], addToCart = () => {} }) => {
 
     fetchBooks();
   }, []);
+
+  useEffect(() => {
+    // rentalList에 있는 도서들의 CTRLNO에 해당하는 도서를 '대여 중'으로 업데이트
+    if (books && books.length > 0 && rentalList.length > 0) {
+      const updatedBooks = books.map((book) => {
+        if (rentalList.some((rental) => rental.CTRLNO === book.CTRLNO)) {
+          return { ...book, AVAILABLE: '대여 중' };
+        }
+        return book;
+      });
+
+      setBooks(updatedBooks);
+    }
+  }, [rentalList]); // rentalList가 변경될 때마다 실행
 
   useEffect(() => {
     if (!books || books.length === 0) return;
