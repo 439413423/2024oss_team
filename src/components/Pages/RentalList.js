@@ -1,8 +1,12 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const RentalList = ({ rentalList = [] }) => {
+const RentalList = ({ rentalList = [], returnBook }) => {
   const navigate = useNavigate();
+
+  const handleReturn = (ctrlNo) => {
+    returnBook(ctrlNo); // 반납 함수 호출
+  };
 
   if (rentalList.length === 0) {
     return (
@@ -51,6 +55,13 @@ const RentalList = ({ rentalList = [] }) => {
               >
                 대여 중
               </span>
+              <button
+                className="btn btn-danger"
+                onClick={() => handleReturn(book.CTRLNO)}
+                style={{ marginTop: '10px' }}
+              >
+                반납하기
+              </button>
             </div>
           </div>
         ))}

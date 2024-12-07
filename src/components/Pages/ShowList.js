@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-const ShowList = ({ cart = [], addToCart = () => {} }, rentalList = []) => {
+const ShowList = ({ cart = [], addToCart = () => {}, rentalList = [] }) => {
   const [books, setBooks] = useState([]);
   const [filteredBooks, setFilteredBooks] = useState([]);
   const [searchKeyword, setSearchKeyword] = useState('');
@@ -46,16 +46,8 @@ const ShowList = ({ cart = [], addToCart = () => {} }, rentalList = []) => {
           LANG: row.getElementsByTagName('LANG')[0]?.textContent || 'N/A',
         }));
 
-        // 대여된 책들의 'AVAILABLE' 상태를 '대여 중'으로 변경
-        const updatedBooks = bookArray.map((book) => {
-          if (rentalList.some((rentalBook) => rentalBook.CTRLNO === book.CTRLNO)) {
-            return { ...book, AVAILABLE: '대여 중' };
-          }
-          return book;
-        });
-
-        setBooks(updatedBooks);
-        setFilteredBooks(updatedBooks);
+        setBooks(bookArray);
+        setFilteredBooks(bookArray);
         setLoading(false);
       } catch (err) {
         console.error('Error fetching data:', err);
@@ -65,7 +57,23 @@ const ShowList = ({ cart = [], addToCart = () => {} }, rentalList = []) => {
     };
 
     fetchBooks();
-  }, [rentalList]);
+  }, []);
+
+  useEffect(() => {
+    // rentalList에 있는 도서들의 CTRLNO에 해당하는 도서를 '대여 중'으로 업데이트
+    if (books && books.length > 0 && rentalList.length > 0) {
+      const updatedBooks = books.map((book) => {
+        // rentalList에서 대여 중인 책을 찾은 경우
+        if (rentalList.some((rental) => rental.CTRLNO === book.CTRLNO)) {
+          return { ...book, AVAILABLE: '대여 중' };
+        }
+        return book;
+      });
+
+      // 상태 업데이트
+      setBooks(updatedBooks);
+    }
+  }, [rentalList]); // rentalList가 변경될 때마다 실행
 
   useEffect(() => {
     if (!books || books.length === 0) return;
