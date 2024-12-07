@@ -29,8 +29,8 @@ const ShowList = ({ cart = [], addToCart = () => {}, rentalList = [], removeFrom
 
         const parser = new DOMParser();
         const xmlDoc = parser.parseFromString(xmlData, 'application/xml');
-
         const resultCode = xmlDoc.getElementsByTagName('CODE')[0]?.textContent;
+
         if (resultCode !== 'INFO-000') {
           throw new Error(xmlDoc.getElementsByTagName('MESSAGE')[0]?.textContent || 'API Error');
         }
@@ -60,7 +60,6 @@ const ShowList = ({ cart = [], addToCart = () => {}, rentalList = [], removeFrom
   }, []);
 
   useEffect(() => {
-    // rentalList에 있는 도서들의 CTRLNO에 해당하는 도서를 '대여 중'으로 업데이트
     if (books && books.length > 0 && rentalList.length > 0) {
       const updatedBooks = books.map((book) => {
         if (rentalList.some((rental) => rental.CTRLNO === book.CTRLNO)) {
@@ -71,7 +70,7 @@ const ShowList = ({ cart = [], addToCart = () => {}, rentalList = [], removeFrom
 
       setBooks(updatedBooks);
     }
-  }, [rentalList]); // rentalList가 변경될 때마다 실행
+  }, [rentalList]);
 
   useEffect(() => {
     if (!books || books.length === 0) return;
@@ -125,7 +124,6 @@ const ShowList = ({ cart = [], addToCart = () => {}, rentalList = [], removeFrom
 
   if (loading) return <p>데이터를 불러오는 중입니다...</p>;
   if (error) return <p>오류 발생: {error}</p>;
-
   return (
     <div className="container">
       <h1>도서 리스트</h1>
