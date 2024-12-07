@@ -46,6 +46,14 @@ const ShowList = ({ cart = [], addToCart = () => {}, rentalList = [] }) => {
           LANG: row.getElementsByTagName('LANG')[0]?.textContent || 'N/A',
         }));
 
+        // 대여된 책들의 'AVAILABLE' 상태를 '대여 중'으로 변경
+        const updatedBooks = bookArray.map((book) => {
+          if (rentalList.some((rentalBook) => rentalBook.CTRLNO === book.CTRLNO)) {
+            return { ...book, AVAILABLE: '대여 중' };
+          }
+          return book;
+        });
+
         setBooks(bookArray);
         setFilteredBooks(bookArray);
         setLoading(false);
@@ -60,27 +68,18 @@ const ShowList = ({ cart = [], addToCart = () => {}, rentalList = [] }) => {
   }, []);
 
   useEffect(() => {
-    console.log('들어오긴 했어');
-    console.log(rentalList.length);
-    console.log(books.length);
-    console.log(books);
-
-    // rentalList에 있는 도서들의 CTRLNO에 해당하는 도서를 '대여 중'으로 업데이트
-    if (books && books.length > 0 && rentalList.length > 0) {
+    // rentalList가 변경될 때마다 books 갱신
+    if (books.length > 0) {
       const updatedBooks = books.map((book) => {
-        console.log('일단 찾았어');
-        // rentalList에서 대여 중인 책을 찾은 경우
-        if (rentalList.some((rental) => rental.CTRLNO === book.CTRLNO)) {
-          console.log('일단 맞췄어');
+        if (rentalList.some((rentalBook) => rentalBook.CTRLNO === book.CTRLNO)) {
           return { ...book, AVAILABLE: '대여 중' };
         }
         return book;
       });
 
-      // 상태 업데이트
-      setBooks(updatedBooks);
+      setFilteredBooks(updatedBooks);
     }
-  }, [books, rentalList]); // rentalList가 변경될 때마다 실행
+  }, [rentalList, books]); // rentalList나 books가 변경될 때마다 실행
 
   useEffect(() => {
     if (!books || books.length === 0) return;
