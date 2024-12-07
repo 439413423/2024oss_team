@@ -61,6 +61,9 @@ const ShowList = ({ cart = [], addToCart = () => {}, rentalList = [] }) => {
 
   useEffect(() => {
     console.log('들어오긴 했어');
+    console.log(rentalList.length);
+    console.log(books.length);
+    console.log(books);
 
     // rentalList에 있는 도서들의 CTRLNO에 해당하는 도서를 '대여 중'으로 업데이트
     if (books && books.length > 0 && rentalList.length > 0) {
