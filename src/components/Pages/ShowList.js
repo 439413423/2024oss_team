@@ -153,6 +153,7 @@ const ShowList = ({ cart = [], addToCart = () => {}, rentalList = [] }) => {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
+          gap: '10px',
         }}
       >
         <div>
@@ -182,7 +183,7 @@ const ShowList = ({ cart = [], addToCart = () => {}, rentalList = [] }) => {
             <option value="kor">한국어</option>
             <option value="eng">영어</option>
           </select>
-          <label style={{ marginLeft: '10px', display: 'flex' }}>
+          <label style={{ alignItems: 'center', gap: '5px', marginLeft: '10px', display: 'flex' }}>
             <input
               type="checkbox"
               checked={showAvailableOnly}
