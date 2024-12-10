@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import logo from '../../../public/pic.png';
 
 const ShowList = ({ cart = [], addToCart = () => {}, rentalList = [] }) => {
   const [books, setBooks] = useState([]);
@@ -129,6 +130,14 @@ const ShowList = ({ cart = [], addToCart = () => {}, rentalList = [] }) => {
 
   return (
     <div className="container">
+      <img
+        src="{logo}"
+        alt="logo"
+        style={{
+          width: '3rem', // h1 크기와 유사한 너비
+          height: '3rem', // h1 크기와 유사한 높이
+        }}
+      />
       <h1>도서 리스트</h1>
       <div
         className="filters"
@@ -237,29 +246,24 @@ const ShowList = ({ cart = [], addToCart = () => {}, rentalList = [] }) => {
       </div>
 
       <div className="pagination">
-        <button
-          className="page-btn"
-          onClick={() => changePageGroup('prev')}
-          disabled={currentPageGroup === 0}
-          style={{ marginRight: '5px' }}
-        >
+        <button className="page-btn" onClick={() => changePageGroup('prev')} disabled={currentPageGroup === 0}>
           이전
         </button>
+
         {Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i).map((pageNumber) => (
           <button
             key={pageNumber}
             className={`page-btn ${currentPage === pageNumber ? 'active' : ''}`}
             onClick={() => changePage(pageNumber)}
-            style={{ marginRight: '5px' }}
           >
             {pageNumber}
           </button>
         ))}
+
         <button
           className="page-btn"
           onClick={() => changePageGroup('next')}
           disabled={currentPageGroup >= totalGroups - 1}
-          style={{ marginRight: '5px' }}
         >
           다음
         </button>
