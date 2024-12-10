@@ -9,6 +9,14 @@ const Router = () => {
   const [cart, setCart] = useState([]); // 장바구니 상태
   const [rentalList, setRentalList] = useState([]); // 대여 목록 상태 (수정 부분)
 
+  // 📢 반납 기능 추가
+  const returnBook = (ctrlNo) => {
+    // rentalList에서 해당 도서를 삭제
+    const updatedRentalList = rentalList.filter((book) => book.CTRLNO !== ctrlNo);
+    setRentalList(updatedRentalList);
+    alert('도서가 반납되었습니다.');
+  };
+
   // 장바구니에 도서 추가하는 함수
   const addToCart = (book) => {
     if (!cart.some((item) => item.CTRLNO === book.CTRLNO)) {
@@ -50,7 +58,7 @@ const Router = () => {
         <Route path="/cart" element={<CartList cart={cart} removeFromCart={removeFromCart} checkout={checkout} />} />
         <Route path="/book/:CTRLNO" element={<Detail />} />
         {/* 📘 RentalList에 대여 목록 상태 전달 */}
-        <Route path="/rental" element={<RentalList rentalList={rentalList} />} />
+        <Route path="/rental" element={<RentalList rentalList={rentalList} returnBook={returnBook} />} />
       </Routes>
     </BrowserRouter>
   );

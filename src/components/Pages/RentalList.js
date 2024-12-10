@@ -48,13 +48,6 @@ const RentalList = ({ rentalList = [], returnBook }) => {
                 alignItems: 'center',
               }}
             >
-              <span
-                style={{
-                  color: 'green',
-                }}
-              >
-                대여 중
-              </span>
               <button
                 className="btn btn-danger"
                 onClick={() => handleReturn(book.CTRLNO)}
