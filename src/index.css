@@ -106,6 +106,9 @@ h1 {
   color: #999;
   cursor: not-allowed;
 }
+.btn:hover {
+  opacity: 0.8;
+}
 
 span {
   font-weight: bold;
@@ -160,4 +163,19 @@ span[style*='red'] {
   color: #999;
   border-color: #ccc;
   cursor: not-allowed;
+}
+
+.book-actions {
+  display: flex;
+  flex-direction: column; /* 버튼과 상태를 세로 정렬 */
+  align-items: flex-end; /* 오른쪽 정렬 */
+  gap: 10px; /* 간격 설정 */
+  min-width: 150px; /* 버튼 영역 고정 너비 */
+}
+.book-info strong {
+  font-size: 18px;
+  color: #333;
+  white-space: normal; /* 텍스트가 줄바꿈되도록 설정 */
+  word-break: break-word; /* 긴 단어가 있을 경우 자동으로 줄바꿈 */
+  overflow-wrap: break-word; /* 단어가 긴 경우 자동 줄바꿈 */
 }
