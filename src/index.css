@@ -78,13 +78,6 @@ h1 {
   color: #666;
 }
 
-.book-actions {
-  display: flex;
-  flex-direction: column; /* 버튼과 상태를 세로로 정렬 */
-  align-items: flex-end; /* 오른쪽 정렬 */
-  gap: 10px; /* 버튼 간의 간격 */
-}
-
 .btn {
   padding: 10px 15px;
   border-radius: 5px;
@@ -101,7 +94,6 @@ h1 {
 .btn-info {
   background-color: #17a2b8;
   color: white;
-  flex: 1;
 }
 
 .btn-danger {

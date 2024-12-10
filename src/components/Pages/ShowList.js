@@ -129,15 +129,24 @@ const ShowList = ({ cart = [], addToCart = () => {}, rentalList = [] }) => {
 
   return (
     <div className="container">
-      <img
-        src="/pic.png"
-        alt="logo"
+      <div
+        className="header"
         style={{
-          width: '3rem', // h1 크기와 유사한 너비
-          height: '3rem', // h1 크기와 유사한 높이
+          display: 'flex' /* Flexbox로 정렬 */,
+          gap: '10px' /* 이미지와 텍스트 사이 간격 */,
+          padding: '10px',
         }}
-      />
-      <h1>도서 리스트</h1>
+      >
+        <img
+          src="/pic.png"
+          alt="logo"
+          style={{
+            width: '3rem', // h1 크기와 유사한 너비
+            height: '3rem', // h1 크기와 유사한 높이
+          }}
+        />
+        <h1 style={{ margin: 0 }}>도서 리스트</h1>
+      </div>
       <div
         className="filters"
         style={{
@@ -179,7 +188,7 @@ const ShowList = ({ cart = [], addToCart = () => {}, rentalList = [] }) => {
               checked={showAvailableOnly}
               onChange={(e) => setShowAvailableOnly(e.target.checked)}
             />
-            $nbsp대여 가능 도서만 보기
+            <p> 대여 가능 도서만 보기</p>
           </label>
         </div>
         <div>
@@ -205,7 +214,7 @@ const ShowList = ({ cart = [], addToCart = () => {}, rentalList = [] }) => {
               padding: '10px 0',
             }}
           >
-            <div className="book-info">
+            <div>
               <strong>{book.TITLE}</strong>
               <p>{`${book.AUTHOR} / ${book.PUBLER}`}</p>
             </div>
@@ -216,7 +225,7 @@ const ShowList = ({ cart = [], addToCart = () => {}, rentalList = [] }) => {
                 alignItems: 'center',
               }}
             >
-              <div className="book-actions" style={{ marginBottom: '10px' }}>
+              <div style={{ marginBottom: '10px' }}>
                 <button
                   className="btn btn-warning"
                   onClick={() => {
