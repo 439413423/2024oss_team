@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import logo from '../../../public/pic.png';
 
 const ShowList = ({ cart = [], addToCart = () => {}, rentalList = [] }) => {
   const [books, setBooks] = useState([]);
@@ -131,7 +130,7 @@ const ShowList = ({ cart = [], addToCart = () => {}, rentalList = [] }) => {
   return (
     <div className="container">
       <img
-        src="{logo}"
+        src="/pic.png"
         alt="logo"
         style={{
           width: '3rem', // h1 크기와 유사한 너비
