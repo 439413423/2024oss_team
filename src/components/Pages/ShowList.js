@@ -215,7 +215,7 @@ const ShowList = ({ cart = [], addToCart = () => {}, rentalList = [] }) => {
                     console.log(`🛒 장바구니에 추가됨: ${book.TITLE}`);
                     addToCart(book);
                   }}
-                  disabled={cart.some((item) => item.CTRLNO === book.CTRLNO)}
+                  disabled={cart.some((item) => item.CTRLNO === book.CTRLNO) || book.AVAILABLE === '대여 중'}
                   style={{ marginRight: '10px' }}
                 >
                   {cart.some((item) => item.CTRLNO === book.CTRLNO) ? '장바구니에 있음' : '장바구니 추가'}
