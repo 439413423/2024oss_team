@@ -179,7 +179,7 @@ const ShowList = ({ cart = [], addToCart = () => {}, rentalList = [] }) => {
               checked={showAvailableOnly}
               onChange={(e) => setShowAvailableOnly(e.target.checked)}
             />
-            대여 가능 도서만 보기
+            $nbsp대여 가능 도서만 보기
           </label>
         </div>
         <div>
@@ -205,7 +205,7 @@ const ShowList = ({ cart = [], addToCart = () => {}, rentalList = [] }) => {
               padding: '10px 0',
             }}
           >
-            <div>
+            <div className="book-info">
               <strong>{book.TITLE}</strong>
               <p>{`${book.AUTHOR} / ${book.PUBLER}`}</p>
             </div>
@@ -216,7 +216,7 @@ const ShowList = ({ cart = [], addToCart = () => {}, rentalList = [] }) => {
                 alignItems: 'center',
               }}
             >
-              <div style={{ marginBottom: '10px' }}>
+              <div className="book-actions" style={{ marginBottom: '10px' }}>
                 <button
                   className="btn btn-warning"
                   onClick={() => {
