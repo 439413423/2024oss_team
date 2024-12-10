@@ -42,23 +42,16 @@ const ShowList = ({ cart = [], addToCart = () => {}, rentalList = [] }) => {
           AUTHOR: row.getElementsByTagName('AUTHOR')[0]?.textContent || '저자 없음',
           PUBLER: row.getElementsByTagName('PUBLER')[0]?.textContent || '출판사 없음',
           PUBLER_YEAR: parseInt(row.getElementsByTagName('PUBLER_YEAR')[0]?.textContent || '0', 10),
-          AVAILABLE: '대여 가능',
+          AVAILABLE: rentalList.some((r) => r.CTRLNO === row.getElementsByTagName('CTRLNO')[0]?.textContent)
+            ? '대여 중'
+            : '대여 가능',
           LANG: row.getElementsByTagName('LANG')[0]?.textContent || 'N/A',
         }));
-
-        // 대여된 책들의 'AVAILABLE' 상태를 '대여 중'으로 변경
-        const updatedBooks = bookArray.map((book) => {
-          if (rentalList.some((rentalBook) => rentalBook.CTRLNO === book.CTRLNO)) {
-            return { ...book, AVAILABLE: '대여 중' };
-          }
-          return book;
-        });
 
         setBooks(bookArray);
         setFilteredBooks(bookArray);
         setLoading(false);
       } catch (err) {
-        console.error('Error fetching data:', err);
         setError('데이터를 가져오는 중 오류가 발생했습니다.');
         setLoading(false);
       }
