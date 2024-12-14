@@ -1,64 +1,85 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import ShowList from './Pages/ShowList.js';
 import CartList from './Pages/CartList.js';
 import Detail from './Pages/Detail.js';
 import RentalList from './Pages/RentalList.js';
+import axios from 'axios';
 
 const Router = () => {
+  const [books, setBooks] = useState([]); // OpenAPI로 받아온 책 데이터 저장
   const [cart, setCart] = useState([]); // 장바구니 상태
-  const [rentalList, setRentalList] = useState([]); // 대여 목록 상태 (수정 부분)
+  const [loading, setLoading] = useState(true); // 로딩 상태 추가
 
-  // 📢 반납 기능 추가
-  const returnBook = (ctrlNo) => {
-    // rentalList에서 해당 도서를 삭제
-    const updatedRentalList = rentalList.filter((book) => book.CTRLNO !== ctrlNo);
-    setRentalList(updatedRentalList);
-    alert('도서가 반납되었습니다.');
-  };
+  useEffect(() => {
+    const fetchBooks = async () => {
+      try {
+        const response = await axios.get('https://67582f9d60576a194d0f3f84.mockapi.io/book');
+        const bookArray = response.data.map((book) => ({
+          ...book,
+          loan_available: book.loan_available === 'Y' ? '대여 가능' : '대여 중', // 상태 표시 변경
+        }));
+        console.log('📚 API로부터 받은 책 데이터:', bookArray); // 디버깅용 console.log
+        setBooks(bookArray);
+      } catch (error) {
+        console.error('🚨 API 요청 중 오류 발생:', error);
+      } finally {
+        setLoading(false); // 로딩 완료 후 상태 변경
+      }
+    };
 
-  // 장바구니에 도서 추가하는 함수
+    fetchBooks();
+  }, []);
+
   const addToCart = (book) => {
-    if (!cart.some((item) => item.CTRLNO === book.CTRLNO)) {
+    if (!cart.some((item) => item.control_number === book.control_number)) {
       setCart([...cart, book]);
     } else {
       alert('이 도서는 이미 장바구니에 추가되어 있습니다.');
     }
   };
 
-  // 장바구니에서 도서 삭제하는 함수
   const removeFromCart = (ctrlNo) => {
-    setCart(cart.filter((item) => item.CTRLNO !== ctrlNo));
+    setCart(cart.filter((item) => item.control_number !== ctrlNo));
   };
 
-  // 장바구니 전체 대여 완료
-  const checkout = () => {
-    if (cart.length === 0) {
-      alert('장바구니가 비어 있습니다.');
-      return;
-    }
+  const checkout = (cartBooks) => {
+    console.log('🛒 장바구니의 도서 목록 (체크아웃 이전):', cartBooks);
 
-    try {
-      // 🆕 장바구니의 모든 도서를 대여 목록에 추가
-      setRentalList([...rentalList, ...cart]);
+    setBooks((prevBooks) =>
+      prevBooks.map((book) =>
+        cartBooks.some((cartBook) => cartBook.control_number === book.control_number)
+          ? { ...book, loan_available: '대여 중' } // 대여 중으로 변경
+          : book
+      )
+    );
 
-      alert('도서가 대여되었습니다.');
-      setCart([]); // 장바구니 초기화
-    } catch (error) {
-      console.error('대여 실패:', error);
-      alert('대여에 실패했습니다.');
-    }
+    setCart([]);
+
+    alert('대여가 완료되었습니다.');
+  };
+
+  const returnBook = (control_number) => {
+    setBooks((prevBooks) =>
+      prevBooks.map((book) =>
+        book.control_number === control_number
+          ? { ...book, loan_available: '대여 가능' } // 대여 가능으로 복원
+          : book
+      )
+    );
   };
 
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Navigate to="/home" replace />} />
-        <Route path="/home" element={<ShowList cart={cart} addToCart={addToCart} rentalList={rentalList} />} />
+        <Route
+          path="/home"
+          element={<ShowList books={books} setBooks={setBooks} cart={cart} addToCart={addToCart} loading={loading} />}
+        />
         <Route path="/cart" element={<CartList cart={cart} removeFromCart={removeFromCart} checkout={checkout} />} />
-        <Route path="/book/:CTRLNO" element={<Detail />} />
-        {/* 📘 RentalList에 대여 목록 상태 전달 */}
-        <Route path="/rental" element={<RentalList rentalList={rentalList} returnBook={returnBook} />} />
+        <Route path="/book/:control_number" element={<Detail cart={cart} addToCart={addToCart} />} />
+        <Route path="/rental" element={<RentalList books={books} setBooks={setBooks} />} />
       </Routes>
     </BrowserRouter>
   );
