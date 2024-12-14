@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const ShowList = ({ books, setBooks, cart = [], addToCart = () => {} }) => {
+const ShowList = ({ books, setBooks, cart = [], addToCart = () => {}, loading}) => {
   const [filteredBooks, setFilteredBooks] = React.useState([]);
   const [searchKeyword, setSearchKeyword] = React.useState('');
   const [filterType, setFilterType] = React.useState('title');
@@ -57,6 +57,9 @@ const ShowList = ({ books, setBooks, cart = [], addToCart = () => {} }) => {
 
     setCurrentPage(1);
   }, [books, searchKeyword, filterType, showAvailableOnly, languageFilter, sortType]);
+
+  if (loading) return <p>로딩 중...</p>;
+
   /*정렬 수정 부분 끝*/
 
   const displayedBooks = filteredBooks.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -156,7 +159,10 @@ const ShowList = ({ books, setBooks, cart = [], addToCart = () => {} }) => {
                 <button
                   className="btn btn-warning"
                   onClick={() => addToCart(book)}
-                  disabled={cart.some((item) => item.control_number === book.control_number)}
+                  disabled={
+                    cart.some((item) => item.control_number === book.control_number) ||
+                    book.loan_available !== '대여 가능'
+                  }
                   style={{ marginRight: '10px' }}
                 >
                   {cart.some((item) => item.control_number === book.control_number) ? '장바구니에 있음' : '장바구니 추가'}
