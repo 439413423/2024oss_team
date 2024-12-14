@@ -1,14 +1,22 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const RentalList = ({ rentalList = [], returnBook }) => {
+const RentalList = ({ books, setBooks }) => {
   const navigate = useNavigate();
 
-  const handleReturn = (ctrlNo) => {
-    returnBook(ctrlNo); // 반납 함수 호출
+  const handleReturn = (control_number) => {
+    setBooks((prevBooks) =>
+      prevBooks.map((book) =>
+        book.control_number === control_number
+          ? { ...book, loan_available: '대여 가능' } // 반납 상태로 변경
+          : book
+      )
+    );
   };
 
-  if (rentalList.length === 0) {
+  const rentedBooks = books.filter((book) => book.loan_available === '대여 중');
+
+  if (rentedBooks.length === 0) {
     return (
       <div className="container">
         <h1>대여 리스트</h1>
@@ -25,9 +33,9 @@ const RentalList = ({ rentalList = [], returnBook }) => {
       <h1>대여 리스트</h1>
 
       <div id="rental-list" style={{ marginTop: '20px' }}>
-        {rentalList.map((book) => (
+        {rentedBooks.map((book) => (
           <div
-            key={book.CTRLNO}
+            key={book.control_number}
             className="rental-item"
             style={{
               display: 'flex',
@@ -38,8 +46,15 @@ const RentalList = ({ rentalList = [], returnBook }) => {
             }}
           >
             <div>
-              <strong>{book.TITLE}</strong>
-              <p>{`${book.AUTHOR} / ${book.PUBLER}`}</p>
+              <strong>{book.title}</strong>
+              <p>{`${book.author} / ${book.publisher}`}</p>
+              <p>
+                {book.loan_available === '대여 가능' ? (
+                  <span style={{ color: 'green' }}>대여 가능</span>
+                ) : (
+                  <span style={{ color: 'red' }}>대여 중</span>
+                )}
+              </p>
             </div>
             <div
               style={{
@@ -48,13 +63,17 @@ const RentalList = ({ rentalList = [], returnBook }) => {
                 alignItems: 'center',
               }}
             >
-              <button
-                className="btn btn-danger"
-                onClick={() => handleReturn(book.CTRLNO)}
-                style={{ marginTop: '10px' }}
-              >
-                반납하기
-              </button>
+              {book.loan_available === '대여 중' ? (
+                <button
+                  className="btn btn-danger"
+                  onClick={() => handleReturn(book.control_number)}
+                  style={{ marginTop: '10px' }}
+                >
+                  반납하기
+                </button>
+              ) : (
+                <p>대여 가능</p>
+              )}
             </div>
           </div>
         ))}

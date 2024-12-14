@@ -1,83 +1,23 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const ShowList = ({ cart = [], addToCart = () => {}, rentalList = [] }) => {
-  const [books, setBooks] = useState([]);
-  const [filteredBooks, setFilteredBooks] = useState([]);
-  const [searchKeyword, setSearchKeyword] = useState('');
-  const [filterType, setFilterType] = useState('TITLE');
-  const [sortType, setSortType] = useState('');
-  const [languageFilter, setLanguageFilter] = useState('ALL');
-  const [showAvailableOnly, setShowAvailableOnly] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [currentPageGroup, setCurrentPageGroup] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+const ShowList = ({ books, setBooks, cart = [], addToCart = () => {} }) => {
+  const [filteredBooks, setFilteredBooks] = React.useState([]);
+  const [searchKeyword, setSearchKeyword] = React.useState('');
+  const [filterType, setFilterType] = React.useState('title');
+  const [sortType, setSortType] = React.useState('');
+  const [languageFilter, setLanguageFilter] = React.useState('ALL');
+  const [showAvailableOnly, setShowAvailableOnly] = React.useState(false);
+  const [currentPage, setCurrentPage] = React.useState(1);
 
   const navigate = useNavigate();
-  const itemsPerPage = 20;
-  const pagesPerGroup = 10;
+  const itemsPerPage = 10;
 
-  useEffect(() => {
-    const fetchBooks = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const response = await axios.get('/api/books');
-        const xmlData = response.data;
-
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(xmlData, 'application/xml');
-
-        const resultCode = xmlDoc.getElementsByTagName('CODE')[0]?.textContent;
-        if (resultCode !== 'INFO-000') {
-          throw new Error(xmlDoc.getElementsByTagName('MESSAGE')[0]?.textContent || 'API Error');
-        }
-
-        const rows = xmlDoc.getElementsByTagName('row');
-        const bookArray = Array.from(rows).map((row) => ({
-          CTRLNO: row.getElementsByTagName('CTRLNO')[0]?.textContent || 'N/A',
-          TITLE: row.getElementsByTagName('TITLE')[0]?.textContent || '제목 없음',
-          AUTHOR: row.getElementsByTagName('AUTHOR')[0]?.textContent || '저자 없음',
-          PUBLER: row.getElementsByTagName('PUBLER')[0]?.textContent || '출판사 없음',
-          PUBLER_YEAR: parseInt(row.getElementsByTagName('PUBLER_YEAR')[0]?.textContent || '0', 10),
-          AVAILABLE: rentalList.some((r) => r.CTRLNO === row.getElementsByTagName('CTRLNO')[0]?.textContent)
-            ? '대여 중'
-            : '대여 가능',
-          LANG: row.getElementsByTagName('LANG')[0]?.textContent || 'N/A',
-        }));
-
-        setBooks(bookArray);
-        setFilteredBooks(bookArray);
-        setLoading(false);
-      } catch (err) {
-        setError('데이터를 가져오는 중 오류가 발생했습니다.');
-        setLoading(false);
-      }
-    };
-
-    fetchBooks();
-  }, []);
-
-  useEffect(() => {
-    // rentalList가 변경될 때마다 books 갱신
-    if (books.length > 0) {
-      const updatedBooks = books.map((book) => {
-        if (rentalList.some((rentalBook) => rentalBook.CTRLNO === book.CTRLNO)) {
-          return { ...book, AVAILABLE: '대여 중' };
-        }
-        return book;
-      });
-
-      setFilteredBooks(updatedBooks);
-    }
-  }, [rentalList, books]); // rentalList나 books가 변경될 때마다 실행
-
-  useEffect(() => {
+  /*정렬 수정 부분 시작*/
+  React.useEffect(() => {
     if (!books || books.length === 0) return;
 
-    let updatedBooks = books;
+    let updatedBooks = [...books];
 
     if (searchKeyword) {
       updatedBooks = updatedBooks.filter((book) =>
@@ -86,50 +26,62 @@ const ShowList = ({ cart = [], addToCart = () => {}, rentalList = [] }) => {
     }
 
     if (showAvailableOnly) {
-      updatedBooks = updatedBooks.filter((book) => book.AVAILABLE === '대여 가능');
+      updatedBooks = updatedBooks.filter((book) => book.loan_available === '대여 가능');
     }
 
     if (languageFilter !== 'ALL') {
-      updatedBooks = updatedBooks.filter((book) => book.LANG === languageFilter);
+      updatedBooks = updatedBooks.filter((book) => book.language === languageFilter);
     }
 
-    if (sortType === 'TITLE_ASC') {
-      updatedBooks = updatedBooks.sort((a, b) => a.TITLE.localeCompare(b.TITLE, 'ko', { sensitivity: 'base' }));
-    } else if (sortType === 'CTRLNO_ASC') {
-      updatedBooks = updatedBooks.sort((a, b) => a.CTRLNO.localeCompare(b.CTRLNO, 'ko', { sensitivity: 'base' }));
-    } else if (sortType === 'PUBLER_YEAR_ASC') {
-      updatedBooks = updatedBooks.sort((a, b) => a.PUBLER_YEAR - b.PUBLER_YEAR);
+    if (sortType === 'title_asc') {
+      updatedBooks = updatedBooks.sort((a, b) => a.title.localeCompare(b.title, 'ko', { sensitivity: 'base' }));
+    } else if (sortType === 'control_number_asc') {
+      updatedBooks = updatedBooks.sort((a, b) => parseInt(a.control_number, 10) - parseInt(b.control_number, 10));
+    } else if (sortType === 'publication_year_asc') {
+      updatedBooks = updatedBooks.sort((a, b) => a.publication_year - b.publication_year);
     }
 
-    setFilteredBooks([...updatedBooks]);
+    const uniqueBooks = [];
+    const seenControlNumbers = new Set();
+    updatedBooks.forEach((book) => {
+      if (!seenControlNumbers.has(book.control_number)) {
+        seenControlNumbers.add(book.control_number);
+        uniqueBooks.push(book);
+      }
+    });
+
+    setFilteredBooks((prev) => {
+      const isSame = JSON.stringify(prev) === JSON.stringify(uniqueBooks);
+      return isSame ? prev : uniqueBooks;
+    });
+
+    setCurrentPage(1);
   }, [books, searchKeyword, filterType, showAvailableOnly, languageFilter, sortType]);
+  /*정렬 수정 부분 끝*/
 
   const displayedBooks = filteredBooks.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const totalPages = Math.ceil(filteredBooks.length / itemsPerPage);
-  const totalGroups = Math.ceil(totalPages / pagesPerGroup);
 
   const changePage = (pageNumber) => setCurrentPage(pageNumber);
 
-  const changePageGroup = (direction) => {
-    if (direction === 'next' && currentPageGroup < totalGroups - 1) {
-      setCurrentPageGroup(currentPageGroup + 1);
-      setCurrentPage(currentPageGroup * pagesPerGroup + 1 + pagesPerGroup);
-    } else if (direction === 'prev' && currentPageGroup > 0) {
-      setCurrentPageGroup(currentPageGroup - 1);
-      setCurrentPage(currentPageGroup * pagesPerGroup + 1 - pagesPerGroup);
-    }
-  };
-
-  const startPage = currentPageGroup * pagesPerGroup + 1;
-  const endPage = Math.min(startPage + pagesPerGroup - 1, totalPages);
-
-  if (loading) return <p>데이터를 불러오는 중입니다...</p>;
-  if (error) return <p>오류 발생: {error}</p>;
+  const startPage = 1;
+  const endPage = totalPages;
 
   return (
     <div className="container">
       <h1>도서 리스트</h1>
+
+      {/* 오른쪽 상단에 장바구니 리스트 이동, 대여 리스트 이동 버튼 추가 */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <button className="btn btn-primary ms-2" onClick={() => navigate('/cart')}>
+          장바구니 보기
+        </button>
+        <button className="btn btn-secondary ms-2" onClick={() => navigate('/rental')}>
+          대여 리스트 보기
+        </button>
+      </div>
+
       <div
         className="filters"
         style={{
@@ -146,15 +98,15 @@ const ShowList = ({ cart = [], addToCart = () => {}, rentalList = [] }) => {
             onChange={(e) => setSearchKeyword(e.target.value)}
           />
           <select onChange={(e) => setFilterType(e.target.value)} value={filterType}>
-            <option value="TITLE">제목</option>
-            <option value="AUTHOR">저자</option>
-            <option value="PUBLER">출판사</option>
+            <option value="title">제목</option>
+            <option value="author">저자</option>
+            <option value="publisher">출판사</option>
           </select>
           <select onChange={(e) => setSortType(e.target.value)} value={sortType} style={{ marginLeft: '10px' }}>
             <option value="">정렬 없음</option>
-            <option value="TITLE_ASC">책 제목 가나다순</option>
-            <option value="CTRLNO_ASC">자료 코드순</option>
-            <option value="PUBLER_YEAR_ASC">출판 연도순</option>
+            <option value="title_asc">책 제목 가나다순</option>
+            <option value="control_number_asc">자료 코드순</option>
+            <option value="publication_year_asc">출판 연도순</option>
           </select>
           <select
             onChange={(e) => setLanguageFilter(e.target.value)}
@@ -162,8 +114,8 @@ const ShowList = ({ cart = [], addToCart = () => {}, rentalList = [] }) => {
             style={{ marginLeft: '10px' }}
           >
             <option value="ALL">모든 언어</option>
-            <option value="kor">한국어</option>
-            <option value="eng">영어</option>
+            <option value="한국어">한국어</option>
+            <option value="영어">영어</option>
           </select>
           <label style={{ marginLeft: '10px' }}>
             <input
@@ -174,95 +126,75 @@ const ShowList = ({ cart = [], addToCart = () => {}, rentalList = [] }) => {
             대여 가능 도서만 보기
           </label>
         </div>
-        <div>
-          <button className="btn btn-primary" onClick={() => navigate('/cart')} style={{ marginRight: '10px' }}>
-            장바구니 보기
-          </button>
-          <button className="btn btn-secondary" onClick={() => navigate('/rental')}>
-            대여 리스트 보기
-          </button>
-        </div>
       </div>
 
-      <div id="data-list" style={{ marginTop: '20px' }}>
+      <div id="data-list" style={{ marginTop: "20px" }}>
         {displayedBooks.map((book) => (
           <div
-            key={book.CTRLNO}
+            key={book.control_number}
             className="book-item"
             style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              borderBottom: '1px solid #ccc',
-              padding: '10px 0',
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              borderBottom: "1px solid #ccc",
+              padding: "10px 0",
             }}
           >
             <div>
-              <strong>{book.TITLE}</strong>
-              <p>{`${book.AUTHOR} / ${book.PUBLER}`}</p>
+              <strong>{book.title}</strong>
+              <p>{`${book.author} / ${book.publisher}`}</p>
             </div>
             <div
               style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
               }}
             >
               <div style={{ marginBottom: '10px' }}>
                 <button
                   className="btn btn-warning"
-                  onClick={() => {
-                    console.log(`🛒 장바구니에 추가됨: ${book.TITLE}`);
-                    addToCart(book);
-                  }}
-                  disabled={cart.some((item) => item.CTRLNO === book.CTRLNO) || book.AVAILABLE === '대여 중'}
+                  onClick={() => addToCart(book)}
+                  disabled={cart.some((item) => item.control_number === book.control_number)}
                   style={{ marginRight: '10px' }}
                 >
-                  {cart.some((item) => item.CTRLNO === book.CTRLNO) ? '장바구니에 있음' : '장바구니 추가'}
+                  {cart.some((item) => item.control_number === book.control_number) ? '장바구니에 있음' : '장바구니 추가'}
                 </button>
-                <button className="btn btn-info" onClick={() => navigate(`/book/${book.CTRLNO}`)}>
+                <button
+                  className="btn btn-info"
+                  onClick={() => navigate(`/book/${book.control_number}`)} // control_number로 경로 이동
+                >
                   상세보기
                 </button>
               </div>
               <span
                 style={{
-                  color: book.AVAILABLE === '대여 가능' ? 'green' : 'red',
+                  color: book.loan_available === "대여 가능" ? "green" : "red",
                 }}
               >
-                {book.AVAILABLE}
+                {book.loan_available}
               </span>
             </div>
           </div>
         ))}
       </div>
-
+          
       <div className="pagination">
-        <button
-          className="page-btn"
-          onClick={() => changePageGroup('prev')}
-          disabled={currentPageGroup === 0}
-          style={{ marginRight: '5px' }}
-        >
-          이전
-        </button>
-        {Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i).map((pageNumber) => (
+        {Array.from({ length: endPage }, (_, i) => startPage + i).map((pageNumber) => (
           <button
             key={pageNumber}
             className={`page-btn ${currentPage === pageNumber ? 'active' : ''}`}
             onClick={() => changePage(pageNumber)}
-            style={{ marginRight: '5px' }}
+            style={{
+              marginRight: '5px',
+              backgroundColor: currentPage === pageNumber ? '#007bff' : '',
+              opacity: currentPage === pageNumber ? 1 : 0.7,
+            }}
           >
             {pageNumber}
           </button>
         ))}
-        <button
-          className="page-btn"
-          onClick={() => changePageGroup('next')}
-          disabled={currentPageGroup >= totalGroups - 1}
-          style={{ marginRight: '5px' }}
-        >
-          다음
-        </button>
       </div>
     </div>
   );
